@@ -2,6 +2,7 @@ package grpcserver
 
 import (
 	"log"
+	"time"
 
 	pb "streaming-server/camera_stream"
 	"streaming-server/global"
@@ -23,45 +24,79 @@ func (g Server) Init() error {
 
 // *DataRequest, StreamingService_GetDataStreamingServer) error
 func (s Server) GetDataStreaming(req *emptypb.Empty, srv pb.StreamingService_GetDataStreamingServer) error {
-	log.Println("Fetch data streaming")
+	log.Println("Started data streaming")
+
+	// Create timer for 10 second timeout
+	timer := time.NewTimer(10 * time.Second)
+	defer timer.Stop()
 
 	for {
-		data, ok := <-global.Channel1
-		if !ok {
-			log.Println("some issue occurred while streaming, reading from channel 1")
-		}
+		select {
+		case <-timer.C:
+			log.Println("Stream timeout after 10 seconds")
+			return nil
 
-		resp := pb.DataResponse{
-			Image: data.([]byte),
-		}
+		case data, ok := <-global.Channel1:
+			if !ok {
+				log.Println("Channel closed, ending stream")
+				return nil
+			}
 
-		if err := srv.Send(&resp); err != nil {
-			log.Println("error generating response")
-			return err
+			// Type assert the data to []byte
+			imageData, ok := data.([]byte)
+			if !ok {
+				log.Println("Invalid data type received from channel")
+				continue
+			}
+
+			// Create and send response
+			resp := &pb.DataResponse{
+				Image: imageData,
+			}
+
+			if err := srv.Send(resp); err != nil {
+				log.Printf("Error sending response: %v", err)
+				return err
+			}
 		}
 	}
-
-	return nil
 }
 
 func (s Server) GetDataStreamingStream2(req *emptypb.Empty, srv pb.StreamingService_GetDataStreamingStream2Server) error {
-	log.Println("Fetch data streaming")
+	log.Println("Started data streaming")
+
+	// Create timer for 10 second timeout
+	timer := time.NewTimer(10 * time.Second)
+	defer timer.Stop()
 
 	for {
-		data, ok := <-global.Channel2
-		if !ok {
-			log.Println("some issue occurred while streaming, reading from channel 1")
-		}
+		select {
+		case <-timer.C:
+			log.Println("Stream timeout after 10 seconds")
+			return nil
 
-		resp := pb.DataResponse{
-			Image: data.([]byte),
-		}
+		case data, ok := <-global.Channel2:
+			if !ok {
+				log.Println("Channel closed, ending stream")
+				return nil
+			}
 
-		if err := srv.Send(&resp); err != nil {
-			log.Println("error generating response")
-			return err
+			// Type assert the data to []byte
+			imageData, ok := data.([]byte)
+			if !ok {
+				log.Println("Invalid data type received from channel")
+				continue
+			}
+
+			// Create and send response
+			resp := &pb.DataResponse{
+				Image: imageData,
+			}
+
+			if err := srv.Send(resp); err != nil {
+				log.Printf("Error sending response: %v", err)
+				return err
+			}
 		}
 	}
-
-	return nil
 }
