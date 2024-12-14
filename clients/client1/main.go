@@ -6,6 +6,7 @@ import (
 	"image"
 	"io"
 	"log"
+	"net"
 	"time"
 
 	"gocv.io/x/gocv"
@@ -16,9 +17,31 @@ import (
 	pb "client1/camera_stream"
 )
 
+const (
+	protocol = "tcp"
+	sockAddr = "127.0.0.1:10000"
+)
+
+var (
+	credentials = insecure.NewCredentials() // No SSL/TLS
+	dialer      = func(ctx context.Context, addr string) (net.Conn, error) {
+		var d net.Dialer
+		return d.DialContext(ctx, protocol, addr)
+	}
+	options = []grpc.DialOption{
+		grpc.WithTransportCredentials(credentials),
+		grpc.WithContextDialer(dialer),
+	}
+)
+
 func main() {
+	var (
+		rootCtx          = context.Background()
+		mainCtx, mainCxl = context.WithCancel(rootCtx)
+	)
+	defer mainCxl()
 	// Connect to gRPC server
-	conn, err := grpc.Dial("localhost:10000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(sockAddr, options...)
 	if err != nil {
 		log.Fatalf("Error connecting to gRPC server: %v", err)
 	}
@@ -44,7 +67,7 @@ func main() {
 
 	// Create gRPC client and stream
 	client := pb.NewStreamingServiceClient(conn)
-	stream, err := client.GetDataStreaming(context.Background(), &emptypb.Empty{})
+	stream, err := client.GetDataStreaming(mainCtx, &emptypb.Empty{})
 	if err != nil {
 		log.Fatalf("Error creating stream: %v", err)
 	}

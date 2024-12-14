@@ -7,6 +7,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	protocol = "unix"
+	sockAddr = "/tmp/echo.sock"
+)
+
 func GetGrpcServer() (net.Listener, *grpc.Server) {
 	listener, err := net.Listen("tcp", "127.0.0.1:10000")
 	if err != nil {
