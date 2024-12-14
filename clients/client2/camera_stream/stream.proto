@@ -1,0 +1,17 @@
+syntax = "proto3";
+package stream;
+option go_package = "protofiles/camera_stream";
+
+import "google/protobuf/empty.proto";
+
+
+message DataResponse {
+    bytes image=1;
+}
+
+
+service StreamingService {
+    //unary
+    rpc GetDataStreamingStream2(google.protobuf.Empty) returns (stream DataResponse) {}
+    rpc GetDataStreaming(google.protobuf.Empty) returns (stream DataResponse) {}
+}
