@@ -22,12 +22,16 @@ func (g Server) Init() error {
 	return nil
 }
 
+var (
+	timeout = time.Second * 10
+)
+
 // *DataRequest, StreamingService_GetDataStreamingServer) error
 func (s Server) GetDataStreaming(req *emptypb.Empty, srv pb.StreamingService_GetDataStreamingServer) error {
 	log.Println("Started data streaming")
 
 	// Create timer for 10 second timeout
-	timer := time.NewTimer(10 * time.Second)
+	timer := time.NewTimer(timeout)
 	defer timer.Stop()
 
 	for {
@@ -66,7 +70,7 @@ func (s Server) GetDataStreamingStream2(req *emptypb.Empty, srv pb.StreamingServ
 	log.Println("Started data streaming")
 
 	// Create timer for 10 second timeout
-	timer := time.NewTimer(10 * time.Second)
+	timer := time.NewTimer(timeout)
 	defer timer.Stop()
 
 	for {

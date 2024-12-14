@@ -98,6 +98,9 @@ The client connection will automatically close after 10 seconds. This behavior i
 
 ```go
 // Adjust the connection timeout duration as needed
+var (
+	timeout = time.Second * 10
+)
 ```
 
 ---
