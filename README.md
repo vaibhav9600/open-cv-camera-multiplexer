@@ -4,7 +4,7 @@ Here’s an enhanced and grammatically improved version of your `README.md` file
 
 # Video Stream Multiplexing Using Go Channels and gRPC
 
-This repository contains code to multiplex a single video stream using the Go channels pattern and stream it via gRPC to different services.
+This repository contains code to multiplex a single video stream using the Go channels Tee pattern and stream it via gRPC to different services.
 
 ## Prerequisites
 
